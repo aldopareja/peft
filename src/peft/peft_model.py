@@ -739,10 +739,10 @@ class PeftModelForSeq2SeqLM(PeftModel):
                 )
                 kwargs["token_type_ids"] = None
 
-            if self.peft_config.peft_type == PeftType.PREFIX_TUNING:
-                return self.base_model.generate(**kwargs)
-            else:
-                raise NotImplementedError
+            # if self.peft_config.peft_type == PeftType.PREFIX_TUNING:
+            return self.base_model.generate(**kwargs)
+            # else:
+            #     raise NotImplementedError
 
     def prepare_inputs_for_generation(self, *args, **kwargs):
         model_kwargs = self.base_model_prepare_inputs_for_generation(*args, **kwargs)
@@ -750,6 +750,13 @@ class PeftModelForSeq2SeqLM(PeftModel):
             batch_size = model_kwargs["decoder_input_ids"].shape[0]
             past_key_values = self.get_prompt(batch_size)
             model_kwargs["past_key_values"] = past_key_values
+        else:
+            if model_kwargs["past_key_values"] is None:
+                inputs_embeds = self.word_embeddings(model_kwargs["decoder_input_ids"])
+                prompts = self.get_prompt(batch_size=model_kwargs["decoder_input_ids"].shape[0])
+                prompts = prompts.to(inputs_embeds.dtype)
+                model_kwargs["decoder_inputs_embeds"] = torch.cat((prompts, inputs_embeds), dim=1)
+                model_kwargs["decoder_input_ids"] = None
         return model_kwargs
 
 
