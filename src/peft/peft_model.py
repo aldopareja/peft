@@ -715,7 +715,9 @@ class PeftModelForSeq2SeqLM(PeftModel):
             # concat prompt labels
             if labels is not None:
                 prefix_labels = torch.full((batch_size, self.peft_config.num_virtual_tokens), -100).to(self.device)
-                kwargs["labels"] = torch.cat((prefix_labels, labels), dim=1)
+                # kwargs["labels"] = torch.cat((prefix_labels, labels), dim=1)
+                kwargs["labels"] = labels
+                
             prompts = self.get_prompt(batch_size=batch_size)
             prompts = prompts.to(inputs_embeds.dtype)
             inputs_embeds = torch.cat((prompts[:, : self.peft_config.num_virtual_tokens], inputs_embeds), dim=1)
