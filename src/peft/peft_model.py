@@ -755,7 +755,7 @@ class PeftModelForSeq2SeqLM(PeftModel):
                 inputs_embeds = self.word_embeddings(model_kwargs["decoder_input_ids"])
                 prompts = self.get_prompt(batch_size=model_kwargs["decoder_input_ids"].shape[0])
                 prompts = prompts.to(inputs_embeds.dtype)
-                model_kwargs["decoder_inputs_embeds"] = torch.cat((prompts, inputs_embeds), dim=1)
+                model_kwargs["decoder_inputs_embeds"] = torch.cat((prompts[:, self.peft_config.num_virtual_tokens :], inputs_embeds), dim=1)
                 model_kwargs["decoder_input_ids"] = None
         return model_kwargs
 
